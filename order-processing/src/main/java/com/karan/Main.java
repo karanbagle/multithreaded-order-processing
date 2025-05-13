@@ -1,4 +1,5 @@
 package com.karan;
+import com.karan.order.db.OrderDatabaseService;
 import com.karan.order.model.Order;
 import com.karan.order.service.OrderProcessor;
 import org.slf4j.Logger;
@@ -14,11 +15,12 @@ public class Main {
         final  Logger logger = LoggerFactory.getLogger(Main.class);
         int totalOrders = 10;
         CountDownLatch countDownLatch = new CountDownLatch(totalOrders); //A one-time use countdown object used for coordination
+        OrderDatabaseService dbService = new OrderDatabaseService();
 
 
         for(int i=1; i<=10; i++) {
             Order order = new Order(i,"Item-"+i);
-            executorService.submit(new OrderProcessor(order, countDownLatch));
+            executorService.submit(new OrderProcessor(order, countDownLatch, dbService));
         }
         try{
             countDownLatch.await(); //wait for all tasks to finish
@@ -26,6 +28,8 @@ public class Main {
             Thread.currentThread().interrupt();
         }
         logger.info("All orders processed!");
+        dbService.printAllOrders();
         executorService.shutdown();
+        dbService.closeConnection();
     }
 }
