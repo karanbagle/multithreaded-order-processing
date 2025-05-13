@@ -1,4 +1,5 @@
 package com.karan.order.service;
+import com.karan.order.api.ExternalApiService;
 import com.karan.order.db.OrderDatabaseService;
 import com.karan.order.model.Order;
 import org.slf4j.Logger;
@@ -27,6 +28,8 @@ public class OrderProcessor implements  Runnable {
             Thread.sleep(1000); //simulate some work
             dbService.saveOrder(order);
             logger.info("Saved to DB {}", order);
+            ExternalApiService.verifyOrder(order.getOrderId())
+                    .thenAccept(result->logger.info("API Result for Order {}: {}",order.getOrderId(),result));
         }catch (InterruptedException e){
             Thread.currentThread().interrupt();
             logger.error("Thread interrupted while processing order {}", order);
